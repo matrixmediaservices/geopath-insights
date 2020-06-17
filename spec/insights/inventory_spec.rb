@@ -46,5 +46,29 @@ RSpec.describe Geopath::Insights::Inventory do
     end
   end
 
+  describe '#classification_types' do
+    it 'should get list of classification types' do
+      search = Geopath::Insights::Inventory.classification_types
+      expect(search['classification_types'].size).to be > 0
+    end
+  end
+
+  describe '#constructions' do
+    it 'should get a list of constructions' do
+      search = Geopath::Insights::Inventory.constructions
+      expect(search['constructions'].size).to be > 0
+    end
+
+    it 'should get CHI0012AB by name' do
+      search = Geopath::Insights::Inventory.constructions({ construction_name: 'CHI0012AB' })
+      expect(search['constructions'][0]['name']).to eq('CHI0012AB')
+    end
+
+    it 'should get CHI0012AB by id' do
+      search = Geopath::Insights::Inventory.constructions({ construction_id: 2410 })
+      expect(search['constructions'][0]['name']).to eq('CHI0012AB')
+    end
+  end
+
 
 end
