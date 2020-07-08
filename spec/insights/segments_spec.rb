@@ -7,14 +7,16 @@ RSpec.describe Geopath::Insights::Segments do
 
   describe '#catalog' do
     describe 'sources' do
+      before(:each) do
+        @search = Geopath::Insights::Segments.catalog
+      end
+
       it 'should exist' do
-        search = Geopath::Insights::Segments.catalog
-        expect(search['sources'].size).to be > 0
+        expect(@search['sources'].size).to be > 0
       end
 
       it 'should have categories' do
-        search = Geopath::Insights::Segments.catalog
-        expect(search['sources'].first['categories'].size).to be > 0
+        expect(@search['sources'].first['categories'].size).to be > 0
       end
     end
   end
@@ -24,7 +26,6 @@ RSpec.describe Geopath::Insights::Segments do
       search = Geopath::Insights::Segments.segment(4670)
       expect(search['name']).to eq('ABC')
     end
-
   end
 
 end

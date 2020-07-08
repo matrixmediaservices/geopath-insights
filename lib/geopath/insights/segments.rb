@@ -6,6 +6,7 @@ module Geopath
           options = merge_headers({ query: query })
           results = get('/segments/catalog', options)
           block_given? ? yield(results) : results
+          
         end
 
 
