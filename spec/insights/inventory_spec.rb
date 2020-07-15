@@ -14,7 +14,7 @@ RSpec.describe Geopath::Insights::Inventory do
       }
 
       search = Geopath::Insights::Inventory.search(query)
-      expect(search["inventory_summary"]["inventory_count"]).to eq(10)
+      expect(search.inventory_count).to eq(10)
     end
 
     it "should accept a block" do
@@ -24,33 +24,118 @@ RSpec.describe Geopath::Insights::Inventory do
         "operator_name_list": ["Lamar"]
       }
       Geopath::Insights::Inventory.search(query) do |response|
-        expect(response["inventory_summary"]["inventory_count"]).to eq(10)
+        expect(response.inventory_count).to eq(10)
       end
     end
 
-    it 'should find the correct inventory' do
-      query = { 
-        'page_size': 10,
-        'id_type': 'plant_frame_id',
-        'id_list': ['BK-003']
-       }
-      Geopath::Insights::Inventory.search(query) do |response|
-        expect(response['inventory_summary']['inventory_items'][0]['plant_frame_id']).to eq('BK-003')
-      end
-    end
+    describe 'results' do
+      before(:each) do 
+        @query = { 
+          'page_size': 10,
+          'id_type': 'plant_frame_id',
+          'id_list': ['BK-003'],
+          'measures_required': true
+        }
 
-    it 'should get multiple records for frame id' do 
-      query = { 
-        'page_size': 10, 
-        'id_type': 'plant_frame_id',
-        'id_list': ['1004']
-       }
-       Geopath::Insights::Inventory.search(query) do |response|
-        expect(response['inventory_summary']['inventory_items'].size).to be > 0
-        response['inventory_summary']['inventory_items'].each do |inventory_item|
-          expect(inventory_item['plant_frame_id']).to eq('1004')
+        @search = Geopath::Insights::Inventory.search(@query)
+      end
+
+      it 'should find the correct inventory' do
+        expect(@search.inventory_items.first.plant_frame_id).to eq('BK-003')
+      end
+
+      it 'should get multiple records for frame id' do 
+        @search.inventory_items.each do |inventory_item|
+          expect(inventory_item.plant_frame_id).to eq('BK-003')
         end
-       end
+      end
+
+      it 'should have at least one representation' do
+        @search.inventory_items.each do |inventory_item|
+          expect(inventory_item.representations.size).to be > 0
+        end
+      end
+
+      it 'should have account' do
+        @search.inventory_items.each do |inventory_item|
+          expect(inventory_item.account).to_not be_nil
+        end
+      end
+
+      it 'should have impressions' do
+        @search.inventory_items.each do |inventory_item|
+          expect(inventory_item.impressions).to_not be_nil
+        end
+      end
+
+      describe 'media_type' do
+        it 'should have a media_type' do
+          @search.inventory_items.each do |inventory_item|
+            expect(inventory_item.media_type).to_not be_nil
+          end
+        end
+      end
+
+      describe 'account' do
+        it 'should have name' do
+          @search.inventory_items.each do |inventory_item|
+            expect(inventory_item.account.name).to eq('New York')
+          end
+        end
+
+        it 'should have parent name' do
+          @search.inventory_items.each do |inventory_item|
+            expect(inventory_item.account.parent_name).to eq('Integration Media')
+          end
+        end
+
+        it 'should have combined name' do
+          @search.inventory_items.each do |inventory_item|
+            expect(inventory_item.account.combined_name).to eq('Integration Media - New York')
+          end
+        end
+      end
+
+      describe 'location' do
+        checked_attributes = [
+          :orientation, :latitude, :longitude, :dma_name, :cbsa_name, :county_name,
+          :zip_code, :state, :read, :artery
+        ]
+        checked_attributes.each do |attribute|
+          it "should have #{attribute}" do
+            @search.inventory_items.each do |inventory_item|
+              expect(inventory_item.location.send(attribute)).to_not be_nil
+            end
+          end
+        end
+      end
+
+      describe 'measures' do
+        it 'should have measures' do
+          @search.inventory_items.each do |inventory_item|
+            expect(inventory_item.measures).to_not be_nil
+          end
+        end
+
+        it 'it should have period of 7 days' do
+          @search.inventory_items.each do |inventory_item|
+            expect(inventory_item.measures.period_days).to eq(7)
+          end
+        end
+
+        it 'should have a target geography' do
+          @search.inventory_items.each do |inventory_item|
+            expect(inventory_item.measures.target_geography).to_not be_nil
+          end
+        end
+
+        it 'should have a impressions' do
+          @search.inventory_items.each do |inventory_item|
+            expect(inventory_item.measures.impressions).to_not be_nil
+          end
+        end
+        
+      end
     end
   end
 
@@ -62,12 +147,16 @@ RSpec.describe Geopath::Insights::Inventory do
 
     it 'should return Lamar by name search' do
       search = Geopath::Insights::Inventory.operators({ operator_name: 'Lamar' })
-      expect(search['operators'][0]['name']).to eq('Lamar')
+      search.each do |operator|
+        expect(operator.name).to include('Lamar')
+      end
     end
 
     it 'should return Lamar by id search' do
       search = Geopath::Insights::Inventory.operators({ operator_id: 20 })
-      expect(search['operators'][0]['name']).to eq('Lamar')
+      search.each do |operator|
+        expect(operator.name).to eq('Lamar')
+      end
     end
   end
 
@@ -191,16 +280,35 @@ RSpec.describe Geopath::Insights::Inventory do
   end
 
   describe '#media_types' do
+    before(:each) do
+      @search = Geopath::Insights::Inventory.media_types
+    end
+
+
     it 'should get a list of media types' do 
-      search = Geopath::Insights::Inventory.media_types
-      expect(search['media_types'].size).to be > 0
+      expect(@search.size).to be > 0
+    end
+
+    it 'should have a name' do
+      @search.each do |media_type|
+        expect(media_type.name).to_not be_nil
+      end
     end
   end
 
   describe '#illumination_types' do
-    it 'should get a list of illumination types' do
-      search = Geopath::Insights::Inventory.illumination_types
-      expect(search['illumination_types'].size).to be > 0
+    before(:each) do
+      @search = Geopath::Insights::Inventory.illumination_types
+    end
+    
+    it 'should get a list of illumination types' do  
+      expect(@search.size).to be > 0
+    end
+
+    it 'should have a name' do
+      @search.each do |illumination_type|
+        expect(illumination_type.name).to_not be_nil
+      end
     end
   end
 

@@ -26,3 +26,8 @@ end
 require 'geopath/client'
 require 'geopath/insights/inventory'
 require 'geopath/insights/segments'
+require 'geopath/insights/models/base_model'
+require 'geopath/insights/models/inventory/search'
+require 'geopath/insights/models/inventory/operator'
+require 'geopath/insights/models/inventory/media_type'
+require 'geopath/insights/models/inventory/illumination_type'

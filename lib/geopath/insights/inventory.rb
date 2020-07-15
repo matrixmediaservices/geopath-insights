@@ -5,13 +5,17 @@ module Geopath
         def search(query = {})
           options = merge_headers({ body: query.to_json })
           results = post('/inventory/search', options)
-          block_given? ? yield(results) : results
 
+          results = Geopath::Insights::Models::Inventory::Search.new(results['inventory_summary'])
+          block_given? ? yield(results) : results
         end
 
         def operators(query = {})
           options = merge_headers({ query: query })
           results = get('/inventory/operators', options)
+          results = results['operators'].map do |operator|
+            Geopath::Insights::Models::Inventory::Operator.new(operator)
+          end
           block_given? ? yield(results) : results
         end
 
@@ -78,12 +82,18 @@ module Geopath
         def media_types(query = {})
           options = merge_headers({ query: query })
           results = get("/inventory/media_types", options)
+          results = results['media_types'].map do |media_type|
+            Geopath::Insights::Models::Inventory::MediaType.new(media_type)
+          end
           block_given? ? yield(results) : results
         end
 
         def illumination_types(query = {})
           options = merge_headers({ query: query })
           results = get('/inventory/illumination_types', options)
+          results = results['illumination_types'].map do |illumination_type|
+            Geopath::Insights::Models::Inventory::IlluminationType.new(illumination_type)
+          end
           block_given? ? yield(results) : results
         end
 
