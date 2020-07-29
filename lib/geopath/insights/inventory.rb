@@ -22,18 +22,28 @@ module Geopath
         def classification_types(query = {})
           options = merge_headers({ query: query })
           results = get('/inventory/classification_types', options)
+          results = results['classification_types'].map do |classification_type|
+            Geopath::Insights::Models::Inventory::ClassificationType.new(classification_type)
+          end
+
           block_given? ? yield(results) : results
         end
 
         def constructions(query = {})
           options = merge_headers({ query: query })
           results = get('/inventory/constructions', options)
+          results = results['constructions'].map do |construction|
+            Geopath::Insights::Models::Inventory::Construction.new(construction)
+          end
           block_given? ? yield(results) : results
         end
 
         def spot_frame_media_names(query = {})
           options = merge_headers({ query: query })
           results = get('/inventory/spot/framemedianames', options)
+          results = results['frame_media_names'].map do |frame_media_name|
+            Geopath::Insights::Models::Inventory::SpotFrameMediaName.new(frame_media_name)
+          end
           block_given? ? yield(results) : results
         end
 

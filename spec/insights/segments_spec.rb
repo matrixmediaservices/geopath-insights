@@ -27,5 +27,4 @@ RSpec.describe Geopath::Insights::Segments do
       expect(search['name']).to eq('ABC')
     end
   end
-
 end
