@@ -43,5 +43,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "guard-rspec"
 
   # gem 'httparty', '~> 0.13.7'
-  spec.add_runtime_dependency 'httparty', '~> 0.13.7'
+  spec.add_runtime_dependency 'httparty', '>= 0.13.7', '< 0.22.0'
 end
